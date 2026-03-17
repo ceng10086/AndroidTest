@@ -18,5 +18,13 @@
 
     <string name="mark_done">标记为完成</string>
 
+    <string name="export_json">导出 JSON</string>
+    <string name="import_json">导入 JSON</string>
+    <string name="export_success">导出成功</string>
+    <string name="import_success">导入成功</string>
+    <string name="import_overwrite_title">导入将覆盖当前数据</string>
+    <string name="import_overwrite_message">导入会清空当前待办并用文件内容替换。是否继续？</string>
+    <string name="failed">操作失败</string>
+
     <string name="cd_add_task">新建待办</string>
 </resources>

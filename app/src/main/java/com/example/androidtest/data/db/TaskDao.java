@@ -16,11 +16,17 @@ public interface TaskDao {
     @Query("SELECT * FROM tasks ORDER BY updated_at DESC")
     LiveData<List<TaskEntity>> observeAll();
 
+    @Query("SELECT * FROM tasks ORDER BY updated_at DESC")
+    List<TaskEntity> getAllOnce();
+
     @Query("SELECT * FROM tasks WHERE id = :id LIMIT 1")
     LiveData<TaskEntity> observeById(long id);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(TaskEntity entity);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertAll(List<TaskEntity> entities);
 
     @Update
     int update(TaskEntity entity);
@@ -30,4 +36,7 @@ public interface TaskDao {
 
     @Query("DELETE FROM tasks WHERE id = :id")
     int deleteById(long id);
+
+    @Query("DELETE FROM tasks")
+    int deleteAll();
 }

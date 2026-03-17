@@ -1,6 +1,8 @@
 package com.example.androidtest.ui.viewmodel;
 
 import android.app.Application;
+import android.content.ContentResolver;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -38,5 +40,13 @@ public class TaskListViewModel extends AndroidViewModel {
 
     public void insert(@NonNull TaskEntity entity) {
         repository.insert(entity);
+    }
+
+    public void exportToJson(@NonNull ContentResolver resolver, @NonNull Uri uri, @NonNull TaskRepository.ResultCallback callback) {
+        repository.exportToJson(resolver, uri, callback);
+    }
+
+    public void importFromJsonOverwrite(@NonNull ContentResolver resolver, @NonNull Uri uri, @NonNull TaskRepository.ResultCallback callback) {
+        repository.importFromJsonOverwrite(resolver, uri, callback);
     }
 }

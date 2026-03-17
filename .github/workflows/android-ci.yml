@@ -27,5 +27,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
+      - name: Ensure no INTERNET permission
+        run: |
+          if grep -q "android.permission.INTERNET" app/src/main/AndroidManifest.xml; then
+            echo "INTERNET permission is not allowed for offline app." >&2
+            exit 1
+          fi
+
       - name: Build + Lint + Unit tests
         run: ./gradlew --no-daemon assembleDebug lintDebug testDebugUnitTest

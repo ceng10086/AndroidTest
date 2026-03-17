@@ -1,8 +1,11 @@
 package com.example.androidtest;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -16,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.androidtest.adapter.TaskAdapter;
 import com.example.androidtest.data.db.TaskEntity;
 import com.example.androidtest.ui.viewmodel.TaskListViewModel;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Collections;
@@ -28,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private View rootView;
 
     private TaskListViewModel viewModel;
+
+    private ActivityResultLauncher<String> exportLauncher;
+    private ActivityResultLauncher<String[]> importLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +56,24 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         viewModel = new ViewModelProvider(this).get(TaskListViewModel.class);
+
+        exportLauncher = registerForActivityResult(new ActivityResultContracts.CreateDocument("application/json"), this::onExportUri);
+        importLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), this::onImportUri);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.inflateMenu(R.menu.main_menu);
+        toolbar.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.action_export) {
+                exportLauncher.launch("todo-backup.json");
+                return true;
+            }
+            if (id == R.id.action_import) {
+                confirmImportOverwrite();
+                return true;
+            }
+            return false;
+        });
 
         adapter = new TaskAdapter(new TaskAdapter.Listener() {
             @Override
@@ -98,5 +124,48 @@ public class MainActivity extends AppCompatActivity {
     private void updateEmptyState(List<TaskEntity> tasks) {
         boolean isEmpty = tasks == null || tasks.isEmpty();
         emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+    }
+
+    private void confirmImportOverwrite() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.import_overwrite_title)
+                .setMessage(R.string.import_overwrite_message)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.import_json, (d, w) -> importLauncher.launch(new String[]{"application/json", "text/*"}))
+                .show();
+    }
+
+    private void onExportUri(Uri uri) {
+        if (uri == null) {
+            return;
+        }
+        viewModel.exportToJson(getContentResolver(), uri, new com.example.androidtest.data.repo.TaskRepository.ResultCallback() {
+            @Override
+            public void onSuccess() {
+                Snackbar.make(rootView, R.string.export_success, Snackbar.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Snackbar.make(rootView, R.string.failed, Snackbar.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void onImportUri(Uri uri) {
+        if (uri == null) {
+            return;
+        }
+        viewModel.importFromJsonOverwrite(getContentResolver(), uri, new com.example.androidtest.data.repo.TaskRepository.ResultCallback() {
+            @Override
+            public void onSuccess() {
+                Snackbar.make(rootView, R.string.import_success, Snackbar.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Snackbar.make(rootView, R.string.failed, Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 }
