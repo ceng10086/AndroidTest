@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.androidtest.adapter.TaskAdapter;
 import com.example.androidtest.data.db.TaskEntity;
 import com.example.androidtest.ui.viewmodel.TaskListViewModel;
+import com.google.gson.JsonParseException;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -147,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onError(Exception e) {
-                Snackbar.make(rootView, R.string.failed, Snackbar.LENGTH_LONG).show();
+                showBackupError(e);
             }
         });
     }
@@ -164,8 +165,27 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onError(Exception e) {
-                Snackbar.make(rootView, R.string.failed, Snackbar.LENGTH_LONG).show();
+                showBackupError(e);
             }
         });
+    }
+
+    private void showBackupError(Exception e) {
+        int message;
+        if (e instanceof JsonParseException) {
+            message = R.string.failed_json;
+        } else if (e instanceof IllegalArgumentException) {
+            String m = e.getMessage();
+            if (m != null && m.startsWith("Unsupported version:")) {
+                message = R.string.failed_version;
+            } else {
+                message = R.string.failed_json;
+            }
+        } else if (e instanceof IllegalStateException) {
+            message = R.string.failed_io;
+        } else {
+            message = R.string.failed;
+        }
+        Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show();
     }
 }

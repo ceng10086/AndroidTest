@@ -14,7 +14,7 @@
 | `updated_at` | Long | NOT NULL | 更新时间（epoch millis） |
 | `priority` | Int | NOT NULL(默认0) | 迭代 3：0低/1中/2高 |
 
-> 迭代 1 可先不落库；迭代 2 引入 Room 后按上述字段落地（priority 可先留默认值）。
+> 迭代 1 可先不落库；迭代 2 引入 Room；迭代 3 已补齐 `priority`（默认 0）。
 
 ## 2. DAO 设计
 
@@ -62,4 +62,4 @@
 ## 5. 数据迁移
 
 - Room `version` 从 1 开始。
-- 迭代 3 若新增字段/索引：提供 Migration（保持升级不丢数据）。
+- 当前已提供从 `1 -> 2` 的迁移：新增 `priority` 列（默认 0）与 `updated_at` 索引。

@@ -12,6 +12,8 @@
     <string name="cancel">取消</string>
 
     <string name="title_required">标题不能为空</string>
+    <string name="title_invalid">标题长度需为 1~60</string>
+    <string name="note_too_long">备注最多 500 字</string>
 
     <string name="deleted">已删除</string>
     <string name="undo">撤销</string>
@@ -25,6 +27,9 @@
     <string name="import_overwrite_title">导入将覆盖当前数据</string>
     <string name="import_overwrite_message">导入会清空当前待办并用文件内容替换。是否继续？</string>
     <string name="failed">操作失败</string>
+    <string name="failed_io">文件读写失败</string>
+    <string name="failed_json">JSON 解析失败</string>
+    <string name="failed_version">备份版本不兼容</string>
 
     <string name="cd_add_task">新建待办</string>
 </resources>

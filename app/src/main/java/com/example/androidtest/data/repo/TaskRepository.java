@@ -12,8 +12,10 @@ import androidx.lifecycle.LiveData;
 import com.example.androidtest.data.db.AppDatabase;
 import com.example.androidtest.data.db.TaskDao;
 import com.example.androidtest.data.db.TaskEntity;
+import com.example.androidtest.util.TaskValidator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -124,14 +126,26 @@ public class TaskRepository {
                     if (t == null || t.title == null) {
                         continue;
                     }
+
+                    String normalizedTitle = TaskValidator.normalizeTitle(t.title);
+                    String normalizedNote = TaskValidator.normalizeNote(t.note);
+                    if (!TaskValidator.isValidTitle(normalizedTitle) || !TaskValidator.isValidNote(normalizedNote)) {
+                        continue;
+                    }
+
                     TaskEntity e = new TaskEntity();
                     e.id = t.id;
-                    e.title = t.title;
-                    e.note = t.note == null ? "" : t.note;
+                    e.title = normalizedTitle;
+                    e.note = normalizedNote;
                     e.isDone = t.isDone;
                     e.createdAt = t.createdAt;
                     e.updatedAt = t.updatedAt;
+                    e.priority = TaskValidator.clampPriority(t.priority);
                     entities.add(e);
+                }
+
+                if (!payload.tasks.isEmpty() && entities.isEmpty()) {
+                    throw new IllegalArgumentException("No valid tasks");
                 }
 
                 database.runInTransaction(() -> {
@@ -140,6 +154,8 @@ public class TaskRepository {
                 });
 
                 mainHandler.post(callback::onSuccess);
+            } catch (JsonParseException e) {
+                mainHandler.post(() -> callback.onError(e));
             } catch (Exception e) {
                 mainHandler.post(() -> callback.onError(e));
             } finally {
@@ -175,6 +191,7 @@ public class TaskRepository {
                     t.isDone = e.isDone;
                     t.createdAt = e.createdAt;
                     t.updatedAt = e.updatedAt;
+                    t.priority = e.priority;
                     payload.tasks.add(t);
                 }
             }
@@ -189,5 +206,6 @@ public class TaskRepository {
         boolean isDone;
         long createdAt;
         long updatedAt;
+        int priority;
     }
 }

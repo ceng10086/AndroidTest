@@ -24,7 +24,7 @@ public class EditTaskViewModel extends AndroidViewModel {
 
     public void insert(@NonNull String title, @NonNull String note) {
         long now = System.currentTimeMillis();
-        TaskEntity entity = new TaskEntity(title, note, false, now, now);
+        TaskEntity entity = new TaskEntity(title, note, false, now, now, 0);
         repository.insert(entity);
     }
 

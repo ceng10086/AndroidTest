@@ -4,9 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "tasks")
+@Entity(
+    tableName = "tasks",
+    indices = {
+        @Index(value = {"updated_at"})
+    }
+)
 public class TaskEntity {
 
     @PrimaryKey(autoGenerate = true)
@@ -30,12 +36,16 @@ public class TaskEntity {
     @ColumnInfo(name = "updated_at")
     public long updatedAt;
 
+    @ColumnInfo(name = "priority", defaultValue = "0")
+    public int priority;
+
     public TaskEntity() {
         this.title = "";
         this.note = "";
         this.isDone = false;
         this.createdAt = 0L;
         this.updatedAt = 0L;
+        this.priority = 0;
     }
 
     @Ignore
@@ -43,11 +53,13 @@ public class TaskEntity {
                       @NonNull String note,
                       boolean isDone,
                       long createdAt,
-                      long updatedAt) {
+                      long updatedAt,
+                      int priority) {
         this.title = title;
         this.note = note;
         this.isDone = isDone;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.priority = priority;
     }
 }

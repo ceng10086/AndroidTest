@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.androidtest.data.db.TaskEntity;
 import com.example.androidtest.ui.viewmodel.EditTaskViewModel;
+import com.example.androidtest.util.TaskValidator;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -26,6 +27,7 @@ public class EditTaskActivity extends AppCompatActivity {
     private EditTaskViewModel viewModel;
 
     private TextInputLayout titleLayout;
+    private TextInputLayout noteLayout;
     private TextInputEditText titleInput;
     private TextInputEditText noteInput;
     private CheckBox doneCheck;
@@ -50,6 +52,7 @@ public class EditTaskActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> finish());
 
         titleLayout = findViewById(R.id.editTitleLayout);
+        noteLayout = findViewById(R.id.editNoteLayout);
         titleInput = findViewById(R.id.editTitle);
         noteInput = findViewById(R.id.editNote);
         doneCheck = findViewById(R.id.editDone);
@@ -79,13 +82,21 @@ public class EditTaskActivity extends AppCompatActivity {
     }
 
     private void onSave() {
-        String title = titleInput.getText() == null ? "" : titleInput.getText().toString().trim();
-        String note = noteInput.getText() == null ? "" : noteInput.getText().toString().trim();
+        String title = TaskValidator.normalizeTitle(titleInput.getText() == null ? null : titleInput.getText().toString());
+        String note = TaskValidator.normalizeNote(noteInput.getText() == null ? null : noteInput.getText().toString());
 
-        if (title.isEmpty()) {
-            titleLayout.setError(getString(R.string.title_required));
+        if (!TaskValidator.isValidTitle(title)) {
+            titleLayout.setError(title.isEmpty() ? getString(R.string.title_required) : getString(R.string.title_invalid));
             return;
         }
+
+        if (!TaskValidator.isValidNote(note)) {
+            titleLayout.setError(null);
+            noteLayout.setError(getString(R.string.note_too_long));
+            return;
+        }
+
+        noteLayout.setError(null);
         titleLayout.setError(null);
 
         if (editing == null) {
