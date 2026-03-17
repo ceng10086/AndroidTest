@@ -1,0 +1,68 @@
+name: Release APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name to upload APK to (e.g. v1.0.0)'
+        required: true
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Determine tag
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="$GITHUB_REF_NAME"
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+
+      - name: Build Debug APK
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Prepare APK filename
+        shell: bash
+        run: |
+          SRC="app/build/outputs/apk/debug/app-debug.apk"
+          DEST="AndroidTest-${TAG}-debug.apk"
+          test -f "$SRC"
+          cp "$SRC" "$DEST"
+          echo "APK_FILE=$DEST" >> "$GITHUB_ENV"
+
+      - name: Upload APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          files: ${{ env.APK_FILE }}
+          fail_on_unmatched_files: true

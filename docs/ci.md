@@ -37,6 +37,19 @@
 
 > 注意：仪器测试成本高，且可能引入不稳定因素；建议先把 unit + lint 作为主门禁。
 
+### 2.3 `release-apk.yml`（可选：自动附加 APK 到 Release）
+
+用途：在发布 Release 或打 tag 时，自动构建 APK 并上传为 Release 资产（asset）。
+
+触发：
+- 发布 Release（`published`）
+- push tag（如 `v1.0.0`）
+- 手动触发（`workflow_dispatch`，并指定 `tag`）
+
+说明：
+- 默认构建 `assembleDebug`，生成 `AndroidTest-<tag>-debug.apk` 并上传到对应 tag 的 Release。
+- 若需要上传签名的 release APK，需要额外配置签名（keystore secrets）。
+
 ## 3. “禁止网络权限”检查（可选增强）
 
 目标：防止误加 `INTERNET` 权限。
